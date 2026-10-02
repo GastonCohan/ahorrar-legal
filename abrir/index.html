@@ -34,6 +34,7 @@
   a.primary { background: var(--primary); color: #FFFFFF; }
   a.secondary { background: var(--surface); color: var(--primary); border: 1px solid var(--primary); }
   .note { font-size: 14px; }
+  a.disabled { opacity: 0.55; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -43,7 +44,7 @@
   <p id="estado">Abriendo el descuento en la app…</p>
   <a id="abrir" class="btn primary" href="#">Abrir en la app</a>
   <a id="play" class="btn secondary" href="https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar">Bajar en Google Play</a>
-  <p class="note" id="ios">Muy pronto en la App Store.</p>
+  <a id="appstore" class="btn secondary" href="#">Muy pronto en la App Store</a>
 </main>
 <script>
   // El descuento compartido desde la app (02/10/2026): abre la app en ese descuento y, si no está
@@ -59,6 +60,8 @@
     var id = (q.get('id') || '').slice(0, 120);
     var path = 'descuento/' + encodeURIComponent(id || 'x') + (params.toString() ? '?' + params : '');
     var PLAY = 'https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar';
+    // Cuando la app esté en TestFlight o en la App Store, poner acá su link (02/10/2026: todavía no).
+    var APP_STORE = '';
     var ua = navigator.userAgent || '';
     var android = /android/i.test(ua);
     var ios = /iphone|ipad|ipod/i.test(ua);
@@ -67,15 +70,29 @@
       ? 'intent://' + path + '#Intent;scheme=ahorrar;package=com.gastoncohan.ahorrar;S.browser_fallback_url=' +
         encodeURIComponent(PLAY) + ';end'
       : appLink;
-    document.getElementById('ios').style.display = android ? 'none' : '';
+    // Cada uno ve el botón de su tienda: Android, Google Play; iPhone, la App Store.
+    var store = document.getElementById('appstore');
+    if (APP_STORE) {
+      store.href = APP_STORE;
+      store.textContent = 'Bajar en la App Store';
+    } else {
+      store.className += ' disabled';
+      store.setAttribute('aria-disabled', 'true');
+    }
+    if (android) store.style.display = 'none';
     // iPhone: la app todavía no está en la App Store (02/10/2026). Intentar abrirla mostraba "Safari
     // no puede abrir la página porque la dirección no es válida": no se intenta, y no se ofrece Google
     // Play. Cuando esté publicada, poner acá el link de la App Store (o TestFlight).
-    if (ios) {
+    if (ios && !APP_STORE) {
       document.getElementById('abrir').style.display = 'none';
       document.getElementById('play').style.display = 'none';
       document.getElementById('estado').textContent =
         'Ahorr-AR te dice con qué tarjeta y qué día te conviene pagar. En iPhone llega muy pronto.';
+      return;
+    }
+    if (ios) {
+      document.getElementById('play').style.display = 'none';
+      document.getElementById('estado').textContent = 'Abrí el descuento en la app o bajala gratis.';
       return;
     }
     if (!android) {
