@@ -43,7 +43,7 @@
   <p id="estado">Abriendo el descuento en la app…</p>
   <a id="abrir" class="btn primary" href="#">Abrir en la app</a>
   <a id="play" class="btn secondary" href="https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar">Bajar en Google Play</a>
-  <p class="note" id="ios">En iPhone, muy pronto en la App Store.</p>
+  <p class="note" id="ios">Muy pronto en la App Store.</p>
 </main>
 <script>
   // El descuento compartido desde la app (02/10/2026): abre la app en ese descuento y, si no está
@@ -68,18 +68,25 @@
         encodeURIComponent(PLAY) + ';end'
       : appLink;
     document.getElementById('ios').style.display = android ? 'none' : '';
-    if (!android && !ios) {
+    // iPhone: la app todavía no está en la App Store (02/10/2026). Intentar abrirla mostraba "Safari
+    // no puede abrir la página porque la dirección no es válida": no se intenta, y no se ofrece Google
+    // Play. Cuando esté publicada, poner acá el link de la App Store (o TestFlight).
+    if (ios) {
+      document.getElementById('abrir').style.display = 'none';
+      document.getElementById('play').style.display = 'none';
+      document.getElementById('estado').textContent =
+        'Ahorr-AR te dice con qué tarjeta y qué día te conviene pagar. En iPhone llega muy pronto.';
+      return;
+    }
+    if (!android) {
       document.getElementById('estado').textContent = 'Abrí este link desde tu celular para ver el descuento.';
       return;
     }
-    // En Android, el "intent" abre la app o, si no está, Google Play. En iPhone se intenta la app y,
-    // si a los dos segundos seguimos acá, es que no está instalada.
+    // Android: el "intent" abre la app en el descuento o, si no está instalada, Google Play.
     location.href = document.getElementById('abrir').href;
     setTimeout(function () {
       if (!document.hidden) {
-        document.getElementById('estado').textContent = android
-          ? '¿No se abrió? Bajá la app gratis en Google Play.'
-          : 'Si no tenés la app, muy pronto vas a poder bajarla en la App Store.';
+        document.getElementById('estado').textContent = '¿No se abrió? Bajá la app gratis en Google Play.';
       }
     }, 2000);
   })();
