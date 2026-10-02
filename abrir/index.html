@@ -1,112 +1,189 @@
 <!doctype html>
 <html lang="es-AR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Un descuento para vos · Ahorr-AR</title>
-<meta name="description" content="Abrí este descuento en Ahorr-AR, la app que te dice con qué tarjeta y qué día te conviene pagar.">
-<!-- Vista previa al compartir (WhatsApp, iMessage): el ícono de la app en lugar de un texto. -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Ahorr-AR">
-<meta property="og:title" content="Un descuento para vos en Ahorr-AR">
-<meta property="og:description" content="Abrilo en la app o bajala gratis: con qué tarjeta y qué día te conviene pagar.">
-<meta property="og:image" content="https://gastoncohan.github.io/ahorrar-legal/icono.png">
-<meta property="og:image:width" content="1024">
-<meta property="og:image:height" content="1024">
-<meta name="twitter:card" content="summary">
-<link rel="icon" type="image/png" href="../icono.png">
-<link rel="apple-touch-icon" href="../icono.png">
-<style>
-  :root { --bg: #F4F6F6; --text: #1F2E2A; --muted: #536861; --primary: #10624B; --surface: #FFFFFF; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0E1715; --text: #EEF1F0; --muted: #8FD0BB; --primary: #3FA283; --surface: #16211E; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
-    background: var(--bg); color: var(--text);
-    font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  main { width: 100%; max-width: 380px; text-align: center; }
-  img { width: 96px; height: 96px; border-radius: 22px; }
-  h1 { font-size: 24px; margin: 16px 0 4px; }
-  p { color: var(--muted); margin: 0 0 24px; }
-  a.btn { display: block; padding: 14px 16px; margin: 0 0 12px; border-radius: 12px; font-weight: 700;
-    text-decoration: none; min-height: 48px; }
-  a.primary { background: var(--primary); color: #FFFFFF; }
-  a.secondary { background: var(--surface); color: var(--primary); border: 1px solid var(--primary); }
-  .note { font-size: 14px; }
-  a.disabled { opacity: 0.55; pointer-events: none; }
-</style>
-</head>
-<body>
-<main>
-  <img src="../icono.png" alt="">
-  <h1>Ahorr-AR</h1>
-  <p id="estado">Abriendo el descuento en la app…</p>
-  <a id="abrir" class="btn primary" href="#">Abrir en la app</a>
-  <a id="play" class="btn secondary" href="https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar">Bajar en Google Play</a>
-  <a id="appstore" class="btn secondary" href="#">Muy pronto en la App Store</a>
-</main>
-<script>
-  // El descuento compartido desde la app (02/10/2026): abre la app en ese descuento y, si no está
-  // instalada, lleva a la tienda. Los ids de las promos cambian cada día: viajan también el comercio,
-  // el medio y el % para encontrar la equivalente (como el aviso de las 9).
-  (function () {
-    var q = new URLSearchParams(location.search);
-    var params = new URLSearchParams();
-    ['comercio', 'medio', 'pct'].forEach(function (k) {
-      var v = q.get(k);
-      if (v) params.set(k, v.slice(0, 120));
-    });
-    var id = (q.get('id') || '').slice(0, 120);
-    var path = 'descuento/' + encodeURIComponent(id || 'x') + (params.toString() ? '?' + params : '');
-    var PLAY = 'https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar';
-    // Cuando la app esté en TestFlight o en la App Store, poner acá su link (02/10/2026: todavía no).
-    var APP_STORE = '';
-    var ua = navigator.userAgent || '';
-    var android = /android/i.test(ua);
-    var ios = /iphone|ipad|ipod/i.test(ua);
-    var appLink = 'ahorrar://' + path;
-    document.getElementById('abrir').href = android
-      ? 'intent://' + path + '#Intent;scheme=ahorrar;package=com.gastoncohan.ahorrar;S.browser_fallback_url=' +
-        encodeURIComponent(PLAY) + ';end'
-      : appLink;
-    // Cada uno ve el botón de su tienda: Android, Google Play; iPhone, la App Store.
-    var store = document.getElementById('appstore');
-    if (APP_STORE) {
-      store.href = APP_STORE;
-      store.textContent = 'Bajar en la App Store';
-    } else {
-      store.className += ' disabled';
-      store.setAttribute('aria-disabled', 'true');
-    }
-    if (android) store.style.display = 'none';
-    // iPhone: la app todavía no está en la App Store (02/10/2026). Intentar abrirla mostraba "Safari
-    // no puede abrir la página porque la dirección no es válida": no se intenta, y no se ofrece Google
-    // Play. Cuando esté publicada, poner acá el link de la App Store (o TestFlight).
-    if (ios && !APP_STORE) {
-      document.getElementById('abrir').style.display = 'none';
-      document.getElementById('play').style.display = 'none';
-      document.getElementById('estado').textContent =
-        'Ahorr-AR te dice con qué tarjeta y qué día te conviene pagar. En iPhone llega muy pronto.';
-      return;
-    }
-    if (ios) {
-      document.getElementById('play').style.display = 'none';
-      document.getElementById('estado').textContent = 'Abrí el descuento en la app o bajala gratis.';
-      return;
-    }
-    if (!android) {
-      document.getElementById('estado').textContent = 'Abrí este link desde tu celular para ver el descuento.';
-      return;
-    }
-    // Android: el "intent" abre la app en el descuento o, si no está instalada, Google Play.
-    location.href = document.getElementById('abrir').href;
-    setTimeout(function () {
-      if (!document.hidden) {
-        document.getElementById('estado').textContent = '¿No se abrió? Bajá la app gratis en Google Play.';
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Un descuento para vos · Ahorr-AR</title>
+    <meta
+      name="description"
+      content="Abrí este descuento en Ahorr-AR, la app que te dice con qué tarjeta y qué día te conviene pagar."
+    />
+    <!-- Vista previa al compartir (WhatsApp, iMessage): el ícono de la app en lugar de un texto. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ahorr-AR" />
+    <meta property="og:title" content="Un descuento para vos en Ahorr-AR" />
+    <meta
+      property="og:description"
+      content="Abrilo en la app o bajala gratis: con qué tarjeta y qué día te conviene pagar."
+    />
+    <meta property="og:image" content="https://gastoncohan.github.io/ahorrar-legal/icono.png" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/png" href="../icono.png" />
+    <link rel="apple-touch-icon" href="../icono.png" />
+    <style>
+      :root {
+        --bg: #f4f6f6;
+        --text: #1f2e2a;
+        --muted: #536861;
+        --primary: #10624b;
+        --surface: #ffffff;
       }
-    }, 2000);
-  })();
-</script>
-</body>
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e1715;
+          --text: #eef1f0;
+          --muted: #8fd0bb;
+          --primary: #3fa283;
+          --surface: #16211e;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          17px/1.5 -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+      }
+      img {
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
+      }
+      h1 {
+        font-size: 24px;
+        margin: 16px 0 4px;
+      }
+      p {
+        color: var(--muted);
+        margin: 0 0 24px;
+      }
+      a.btn {
+        display: block;
+        padding: 14px 16px;
+        margin: 0 0 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        min-height: 48px;
+      }
+      a.primary {
+        background: var(--primary);
+        color: #ffffff;
+      }
+      a.secondary {
+        background: var(--surface);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+      }
+      .note {
+        font-size: 14px;
+      }
+      a.disabled {
+        opacity: 0.55;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="../icono.png" alt="" />
+      <h1>Ahorr-AR</h1>
+      <p id="estado">Abriendo el descuento en la app…</p>
+      <a id="abrir" class="btn primary" href="#">Abrir en la app</a>
+      <a
+        id="play"
+        class="btn secondary"
+        href="https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar"
+        >Bajar en Google Play</a
+      >
+      <a id="appstore" class="btn secondary" href="#">Muy pronto en la App Store</a>
+    </main>
+    <script>
+      // El descuento compartido desde la app (02/10/2026): abre la app en ese descuento y, si no está
+      // instalada, lleva a la tienda. Los ids de las promos cambian cada día: viajan también el comercio,
+      // el medio y el % para encontrar la equivalente (como el aviso de las 9).
+      (function () {
+        var q = new URLSearchParams(location.search);
+        var params = new URLSearchParams();
+        ['comercio', 'medio', 'pct'].forEach(function (k) {
+          var v = q.get(k);
+          if (v) params.set(k, v.slice(0, 120));
+        });
+        var id = (q.get('id') || '').slice(0, 120);
+        var path =
+          'descuento/' + encodeURIComponent(id || 'x') + (params.toString() ? '?' + params : '');
+        var PLAY = 'https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar';
+        // Cuando la app esté en TestFlight o en la App Store, poner acá su link (02/10/2026: todavía no).
+        var APP_STORE = '';
+        var ua = navigator.userAgent || '';
+        var android = /android/i.test(ua);
+        var ios = /iphone|ipad|ipod/i.test(ua);
+        var appLink = 'ahorrar://' + path;
+        document.getElementById('abrir').href = android
+          ? 'intent://' +
+            path +
+            '#Intent;scheme=ahorrar;package=com.gastoncohan.ahorrar;S.browser_fallback_url=' +
+            encodeURIComponent(PLAY) +
+            ';end'
+          : appLink;
+        // Cada uno ve el botón de su tienda: Android, Google Play; iPhone, la App Store.
+        var store = document.getElementById('appstore');
+        if (APP_STORE) {
+          store.href = APP_STORE;
+          store.textContent = 'Bajar en la App Store';
+        } else {
+          store.className += ' disabled';
+          store.setAttribute('aria-disabled', 'true');
+        }
+        if (android) store.style.display = 'none';
+        // iPhone: la app todavía no está en la App Store (02/10/2026). Intentar abrirla mostraba "Safari
+        // no puede abrir la página porque la dirección no es válida": no se intenta, y no se ofrece Google
+        // Play. Cuando esté publicada, poner acá el link de la App Store (o TestFlight).
+        if (ios && !APP_STORE) {
+          document.getElementById('abrir').style.display = 'none';
+          document.getElementById('play').style.display = 'none';
+          document.getElementById('estado').textContent =
+            'Ahorr-AR te dice con qué tarjeta y qué día te conviene pagar. En iPhone llega muy pronto.';
+          return;
+        }
+        if (ios) {
+          document.getElementById('play').style.display = 'none';
+          document.getElementById('estado').textContent =
+            'Abrí el descuento en la app o bajala gratis.';
+          return;
+        }
+        if (!android) {
+          document.getElementById('estado').textContent =
+            'Abrí este link desde tu celular para ver el descuento.';
+          return;
+        }
+        // Android: el "intent" abre la app en el descuento o, si no está instalada, Google Play.
+        location.href = document.getElementById('abrir').href;
+        setTimeout(function () {
+          if (!document.hidden) {
+            document.getElementById('estado').textContent =
+              '¿No se abrió? Bajá la app gratis en Google Play.';
+          }
+        }, 2000);
+      })();
+    </script>
+  </body>
 </html>
