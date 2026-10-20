@@ -128,14 +128,35 @@
           if (v) params.set(k, v.slice(0, 120));
         });
         var id = (q.get('id') || '').slice(0, 120);
-        var path =
-          'descuento/' + encodeURIComponent(id || 'x') + (params.toString() ? '?' + params : '');
+        // Un link de campaña (?c=tiktok-v72, sin descuento) abre la app en el inicio.
+        var esDescuento = Boolean(id || params.toString());
+        var path = esDescuento
+          ? 'descuento/' + encodeURIComponent(id || 'x') + (params.toString() ? '?' + params : '')
+          : '';
         var PLAY = 'https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar';
         // Cuando la app esté en TestFlight o en la App Store, poner acá su link (02/10/2026: todavía no).
         var APP_STORE = '';
         var ua = navigator.userAgent || '';
         var android = /android/i.test(ua);
         var ios = /iphone|ipad|ipod/i.test(ua);
+        // Clics por campaña (19/10/2026): solo la campaña del link y si es iPhone o Android, para
+        // saber de qué video o anuncio viene la gente. Nada de quien hace clic.
+        try {
+          var campana = (q.get('c') || (esDescuento ? 'compartido' : 'directo')).slice(0, 40);
+          fetch('https://pjyipjmjukuoasovpiug.supabase.co/rest/v1/rpc/registrar_clic', {
+            method: 'POST',
+            keepalive: true,
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: 'sb_publishable_39qB9yTvzNQDfwHCt_6EHQ_Kt0sgAQM',
+              Authorization: 'Bearer sb_publishable_39qB9yTvzNQDfwHCt_6EHQ_Kt0sgAQM',
+            },
+            body: JSON.stringify({
+              p_campana: campana,
+              p_plataforma: android ? 'android' : ios ? 'ios' : 'otra',
+            }),
+          }).catch(function () {});
+        } catch (e) {}
         var appLink = 'ahorrar://' + path;
         document.getElementById('abrir').href = android
           ? 'intent://' +
