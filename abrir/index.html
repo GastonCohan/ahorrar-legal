@@ -14,7 +14,7 @@
     <meta property="og:title" content="Un descuento para vos en Ahorr-AR" />
     <meta
       property="og:description"
-      content="Abrilo en la app o bajala gratis: con qué tarjeta y qué día te conviene pagar."
+      content="Abrilo en la app o descargala gratis: con qué tarjeta y qué día te conviene pagar."
     />
     <meta property="og:image" content="https://gastoncohan.github.io/ahorrar-legal/icono.png" />
     <meta property="og:image:width" content="1024" />
@@ -112,9 +112,11 @@
         id="play"
         class="btn secondary"
         href="https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar"
-        >Bajar en Google Play</a
+        >Descargar en Google Play</a
       >
-      <a id="appstore" class="btn secondary" href="#">Muy pronto en la App Store</a>
+      <a id="appstore" class="btn secondary" href="https://apps.apple.com/ar/app/ahorr-ar/id6818615740"
+        >Descargar en la App Store</a
+      >
     </main>
     <script>
       // El descuento compartido desde la app (02/10/2026): abre la app en ese descuento y, si no está
@@ -134,8 +136,8 @@
           ? 'descuento/' + encodeURIComponent(id || 'x') + (params.toString() ? '?' + params : '')
           : '';
         var PLAY = 'https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar';
-        // Cuando la app esté en TestFlight o en la App Store, poner acá su link (02/10/2026: todavía no).
-        var APP_STORE = '';
+        // Publicada en la App Store de Argentina el 20/10/2026.
+        var APP_STORE = 'https://apps.apple.com/ar/app/ahorr-ar/id6818615740';
         var ua = navigator.userAgent || '';
         var android = /android/i.test(ua);
         var ios = /iphone|ipad|ipod/i.test(ua);
@@ -169,7 +171,7 @@
         var store = document.getElementById('appstore');
         if (APP_STORE) {
           store.href = APP_STORE;
-          store.textContent = 'Bajar en la App Store';
+          store.textContent = 'Descargar en la App Store';
         } else {
           store.className += ' disabled';
           store.setAttribute('aria-disabled', 'true');
@@ -187,8 +189,16 @@
         }
         if (ios) {
           document.getElementById('play').style.display = 'none';
+          // Un link de campaña (sin descuento) lleva directo a la App Store, como Google Play en
+          // Android. Con la app instalada, el link universal la abre antes de llegar acá.
+          if (!esDescuento) {
+            document.getElementById('abrir').style.display = 'none';
+            document.getElementById('estado').textContent = 'Llevándote a la App Store…';
+            location.href = APP_STORE;
+            return;
+          }
           document.getElementById('estado').textContent =
-            'Abrí el descuento en la app o bajala gratis.';
+            'Abrí el descuento en la app o descargala gratis.';
           return;
         }
         if (!android) {
@@ -201,7 +211,7 @@
         setTimeout(function () {
           if (!document.hidden) {
             document.getElementById('estado').textContent =
-              '¿No se abrió? Bajá la app gratis en Google Play.';
+              '¿No se abrió? Descargá la app gratis en Google Play.';
           }
         }, 2000);
       })();
