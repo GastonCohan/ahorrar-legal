@@ -206,7 +206,17 @@
             'Abrí este link desde tu celular para ver el descuento.';
           return;
         }
-        // Android: el "intent" abre la app en el descuento o, si no está instalada, Google Play.
+        // Android, link de campaña (sin descuento): directo a Google Play con un link común, como la
+        // App Store en iPhone. 21/10/2026: el navegador de TikTok bloquea los "intent://" y de 111 clics
+        // de Android salieron 2 instalaciones (en iPhone, 6 de 18).
+        if (!esDescuento) {
+          document.getElementById('abrir').style.display = 'none';
+          document.getElementById('estado').textContent = 'Llevándote a Google Play…';
+          location.href = PLAY;
+          return;
+        }
+        // Android, un descuento compartido: el "intent" abre la app en el descuento o, si no está
+        // instalada, Google Play.
         location.href = document.getElementById('abrir').href;
         setTimeout(function () {
           if (!document.hidden) {
