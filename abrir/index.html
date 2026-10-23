@@ -114,7 +114,10 @@
         href="https://play.google.com/store/apps/details?id=com.gastoncohan.ahorrar"
         >Descargar en Google Play</a
       >
-      <a id="appstore" class="btn secondary" href="https://apps.apple.com/ar/app/ahorr-ar/id6818615740"
+      <a
+        id="appstore"
+        class="btn secondary"
+        href="https://apps.apple.com/ar/app/ahorr-ar/id6818615740"
         >Descargar en la App Store</a
       >
     </main>
@@ -209,6 +212,21 @@
         // Android, link de campaña (sin descuento): directo a Google Play con un link común, como la
         // App Store en iPhone. 21/10/2026: el navegador de TikTok bloquea los "intent://" y de 111 clics
         // de Android salieron 2 instalaciones (en iPhone, 6 de 18).
+        // 23/10/2026: dentro de TikTok, el link común abre la versión web de Google Play en su navegador
+        // (pide iniciar sesión) y de 287 clics de Android salieron 3 instalaciones. Ahí no se redirige
+        // solo: un botón grande con "market://", que abre la app Play Store, y la ayuda para salir del
+        // navegador de TikTok. Fuera de TikTok (Chrome, WhatsApp) el link común abre Play Store.
+        var enTikTok = /musical_ly|tiktok|bytedance/i.test(ua);
+        if (!esDescuento && enTikTok) {
+          document.getElementById('abrir').style.display = 'none';
+          var play = document.getElementById('play');
+          play.className = 'btn primary';
+          play.textContent = 'Descargar gratis en Google Play';
+          play.href = 'market://details?id=com.gastoncohan.ahorrar';
+          document.getElementById('estado').textContent =
+            'Tocá el botón para descargarla. Si no se abre Google Play, tocá ⋯ arriba a la derecha y "Abrir en el navegador".';
+          return;
+        }
         if (!esDescuento) {
           document.getElementById('abrir').style.display = 'none';
           document.getElementById('estado').textContent = 'Llevándote a Google Play…';
