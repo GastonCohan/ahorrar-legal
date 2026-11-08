@@ -216,15 +216,22 @@
         // (pide iniciar sesión) y de 287 clics de Android salieron 3 instalaciones. Ahí no se redirige
         // solo: un botón grande con "market://", que abre la app Play Store, y la ayuda para salir del
         // navegador de TikTok. Fuera de TikTok (Chrome, WhatsApp) el link común abre Play Store.
+        // 07/11/2026: lo mismo en el navegador de Facebook e Instagram (anuncios de Meta): de 42 clics
+        // de Android en el anuncio no salió ninguna instalación.
         var enTikTok = /musical_ly|tiktok|bytedance/i.test(ua);
-        if (!esDescuento && enTikTok) {
+        var enMeta = /FBAN|FBAV|FB_IAB|FBIOS|Instagram/i.test(ua);
+        if (!esDescuento && enMeta) {
+          // Probar abrir Play Store directo; si el navegador lo frena, queda el botón.
+          location.href = 'market://details?id=com.gastoncohan.ahorrar';
+        }
+        if (!esDescuento && (enTikTok || enMeta)) {
           document.getElementById('abrir').style.display = 'none';
           var play = document.getElementById('play');
           play.className = 'btn primary';
           play.textContent = 'Descargar gratis en Google Play';
           play.href = 'market://details?id=com.gastoncohan.ahorrar';
           document.getElementById('estado').textContent =
-            'Tocá el botón para descargarla. Si no se abre Google Play, tocá ⋯ arriba a la derecha y "Abrir en el navegador".';
+            'Tocá el botón para descargarla. Si no se abre Google Play, tocá el menú de arriba a la derecha y "Abrir en el navegador".';
           return;
         }
         if (!esDescuento) {
